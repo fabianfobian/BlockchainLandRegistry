@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth } from "./auth";
+import { setupAuth, hashPassword } from "./auth";
 import { storage } from "./storage";
 import { insertLandSchema, insertTransactionSchema, insertVerificationLogSchema, LandStatus, UserRole } from "@shared/schema";
 import { z } from "zod";
@@ -31,6 +31,58 @@ const hasRole = (roles: UserRole[]) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
+  
+  // DEVELOPMENT ONLY: Seed endpoint to create test accounts
+  if (process.env.NODE_ENV === 'development') {
+    app.post("/api/seed/users", async (req, res) => {
+      try {
+        const { adminPassword, verifierPassword } = req.body;
+        if (!adminPassword || !verifierPassword) {
+          return res.status(400).json({ message: "Passwords are required" });
+        }
+        
+        const hashedAdminPassword = await hashPassword(adminPassword);
+        const hashedVerifierPassword = await hashPassword(verifierPassword);
+        
+        // Create admin user if it doesn't exist
+        let adminUser = await storage.getUserByUsername("admin");
+        if (!adminUser) {
+          adminUser = await storage.createUser({
+            username: "admin",
+            email: "admin@landregistry.com",
+            password: hashedAdminPassword,
+            fullName: "System Administrator",
+            role: UserRole.ADMIN,
+            walletAddress: null
+          });
+        }
+        
+        // Create verifier user if it doesn't exist
+        let verifierUser = await storage.getUserByUsername("verifier");
+        if (!verifierUser) {
+          verifierUser = await storage.createUser({
+            username: "verifier",
+            email: "verifier@landregistry.com",
+            password: hashedVerifierPassword,
+            fullName: "Land Verifier",
+            role: UserRole.VERIFIER,
+            walletAddress: null
+          });
+        }
+        
+        res.status(201).json({ 
+          message: "Test users created successfully",
+          users: [
+            { username: "admin", role: UserRole.ADMIN },
+            { username: "verifier", role: UserRole.VERIFIER }
+          ]
+        });
+      } catch (error) {
+        console.error("Error creating test users:", error);
+        res.status(500).json({ message: "Failed to create test users" });
+      }
+    });
+  }
 
   // System routes
   app.get("/api/system/stats", isAuthenticated, async (req, res) => {
