@@ -194,9 +194,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all lands owned by the current user
   app.get("/api/lands/my", isAuthenticated, async (req, res) => {
     try {
+      console.log("Fetching lands for user:", req.user?.id);
+      if (!req.user || !req.user.id) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+      
       const lands = await storage.getLandsByOwner(req.user.id);
-      res.json(lands);
+      console.log("User lands found:", lands?.length || 0);
+      res.json(lands || []);
     } catch (error) {
+      console.error("Error fetching user lands:", error);
       res.status(500).json({ message: "Failed to fetch lands" });
     }
   });
@@ -308,9 +315,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all verified lands for sale (marketplace)
   app.get("/api/lands/marketplace", async (req, res) => {
     try {
+      console.log("Fetching verified lands for sale");
       const lands = await storage.getVerifiedLandsForSale();
-      res.json(lands);
+      console.log("Verified lands for sale found:", lands?.length || 0);
+      res.json(lands || []);
     } catch (error) {
+      console.error("Error fetching marketplace lands:", error);
       res.status(500).json({ message: "Failed to fetch marketplace lands" });
     }
   });
@@ -370,9 +380,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all transactions for current user
   app.get("/api/transactions/my", isAuthenticated, async (req, res) => {
     try {
+      console.log("Fetching transactions for user:", req.user?.id);
+      if (!req.user || !req.user.id) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+      
       const transactions = await storage.getTransactionsByUser(req.user.id);
-      res.json(transactions);
+      console.log("User transactions found:", transactions?.length || 0);
+      res.json(transactions || []);
     } catch (error) {
+      console.error("Error fetching user transactions:", error);
       res.status(500).json({ message: "Failed to fetch transactions" });
     }
   });
@@ -380,9 +397,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all pending transactions (for verifiers)
   app.get("/api/transactions/pending", isAuthenticated, hasRole([UserRole.VERIFIER, UserRole.ADMIN]), async (req, res) => {
     try {
+      console.log("Fetching pending transactions");
       const transactions = await storage.getPendingTransactions();
-      res.json(transactions);
+      console.log("Pending transactions found:", transactions?.length || 0);
+      res.json(transactions || []);
     } catch (error) {
+      console.error("Error fetching pending transactions:", error);
       res.status(500).json({ message: "Failed to fetch pending transactions" });
     }
   });
@@ -468,9 +488,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get verification logs by verifier
   app.get("/api/verification-logs/verifier", isAuthenticated, hasRole([UserRole.VERIFIER]), async (req, res) => {
     try {
+      // Add proper error handling and debugging
+      console.log("Fetching verification logs for verifier:", req.user?.id);
+      if (!req.user || !req.user.id) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+      
       const logs = await storage.getVerificationLogsByVerifier(req.user.id);
-      res.json(logs);
+      console.log("Verification logs found:", logs?.length || 0);
+      res.json(logs || []);
     } catch (error) {
+      console.error("Error fetching verification logs:", error);
       res.status(500).json({ message: "Failed to fetch verification logs" });
     }
   });
