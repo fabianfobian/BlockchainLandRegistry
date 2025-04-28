@@ -1,0 +1,120 @@
+Users of the Land Registry System (Government Approval Model)
+User Type	Description	Typical Actions
+Land Owner	A person who owns land and wants to register or transfer it.	Create account, register land, list for sale, initiate transfer.
+Buyer	A person who wants to buy land from a registered owner.	Create account, browse lands, buy land, await ownership transfer approval.
+Verifier (Government Official)	Government staff responsible for approving registrations and transfers.	Approve or reject land ownerships and sales.
+Admin	System administrator managing users, verifiers, and system settings.	Manage user roles, monitor verifications, resolve disputes.
+General Visitor	Guest browsing public listings without signing up.	View verified lands, search for properties.
+How Users Should Interact with the System (Step-by-Step)
+1. Land Owner Interaction Flow
+
+    Register and log in using traditional sign-up (email, password, possibly KYC info).
+
+    After login, connect blockchain wallet to the account.
+
+    Submit a new land registration:
+
+        Fill land information (title, description, map coordinates, etc.).
+
+        Upload required documents (title deed, ID, etc.), stored on IPFS.
+
+        The land is submitted as a pending registration request.
+
+    Wait for government approval:
+
+        Government verifier checks submission and approves/rejects.
+
+        If approved, a smart contract mints a land NFT and assigns it to the owner's connected wallet address.
+
+    List the land for sale (optional):
+
+        Set a price and make it visible to potential buyers.
+
+    Initiate transfer request when a buyer is found:
+
+        Submit sale transaction, which also requires government approval before transfer finalization.
+
+2. Buyer Interaction Flow
+
+    Register and log in using traditional sign-up.
+
+    Connect wallet after login to enable purchase functionalities.
+
+    Browse only verified lands available for sale.
+
+    Make an offer and pay into a secure escrow smart contract.
+
+    Await government verification of the transfer.
+
+    Upon approval, land NFT is transferred to buyer’s wallet address.
+
+    View land ownership in the personal dashboard.
+
+3. Verifier (Government Official) Interaction Flow
+
+    Log in using official credentials.
+
+    Connect government-issued blockchain wallet for signing approvals.
+
+    View all pending land registration requests and ownership transfer requests.
+
+    Review the land details and documents.
+
+    Approve or reject requests:
+
+        Approval leads to minting NFT or transferring NFT ownership.
+
+        Rejection includes providing a reason recorded on-chain and off-chain.
+
+    All actions are permanently logged to ensure public auditability.
+
+4. Admin Interaction Flow
+
+    Log in with administrator credentials.
+
+    Assign verifier roles to government officials.
+
+    Monitor all pending and approved transactions across the platform.
+
+    Manage users, including suspending fraudulent accounts if needed.
+
+    Access analytics like number of registered lands, number of ownership changes, average time to approval.
+
+5. General Visitor Interaction Flow
+
+    No login required for browsing.
+
+    Search for verified lands using public search tools.
+
+    View detailed listings but cannot initiate buying or selling without creating an account.
+
+Important Features (Due to Government Approval)
+
+    Land and ownership transactions remain pending until government approval is completed.
+
+    Buyers' payments are held securely in a smart contract escrow during the transfer process.
+
+    Government verifiers digitally sign approval transactions on-chain.
+
+    Clear visual status indicators (Pending Registration, Verified, Pending Transfer, Rejected).
+
+    Transparent audit trail showing every action with blockchain proof.
+
+    Notifications for users whenever the status of their land changes (submitted, approved, rejected).
+
+System Authentication and Flow Summary
+
+    Traditional Sign-Up/Login (Email + Password)
+
+    Profile Management (Upload KYC, personal details)
+
+    Wallet Connection (MetaMask, WalletConnect)
+
+    Perform blockchain-based actions (register land, transfer ownership)
+
+Example Workflow
+
+Land Owner registers traditionally → logs in → connects wallet → submits land registration →
+Verifier checks and approves → smart contract mints NFT →
+Land listed for sale → Buyer registers → logs in → connects wallet → buys land →
+Verifier approves transfer → NFT transferred to buyer.

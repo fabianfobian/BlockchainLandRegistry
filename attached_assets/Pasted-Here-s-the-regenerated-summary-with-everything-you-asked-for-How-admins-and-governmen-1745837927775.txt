@@ -1,0 +1,62 @@
+Here’s the **regenerated summary** with everything you asked for:  
+- How **admins** and **government officials (registrars)** register and log in,  
+- How **routing** should work so each user sees only their correct dashboard.
+
+---
+
+**Land Registry System Overview**  
+Users must first create an account using traditional email and password login. After login, they connect their blockchain wallet to perform blockchain-related actions like land registration or transfer.
+
+**User Types and Registration:**  
+- Land Owner: Self-registers through public signup form.  
+- Buyer: Self-registers through public signup form.  
+- Government Official (Registrar/Verifier): Must be manually created by Admin or verified through a special secure onboarding portal. Cannot self-register directly.  
+- Admin: First Admin account is created manually during system setup. Future Admins can be added by an existing Admin.
+
+**User Login and Access Control:**  
+- All users login with email and password.  
+- Wallet connection happens after login for blockchain operations.
+- Role-based routing after login ensures that each user sees only their allowed dashboard.
+
+**Routing Logic:**  
+- Land Owner → Routed to "Land Owner Dashboard"  
+  (Register land, view owned lands, list for sale, track verification status, manage profile)  
+- Buyer → Routed to "Buyer Dashboard"  
+  (Browse verified lands, buy lands, view purchase history, manage profile)  
+- Government Official (Registrar) → Routed to "Verifier Dashboard"  
+  (View pending land registrations and transfer requests, approve/reject them)  
+- Admin → Routed to "Admin Dashboard"  
+  (Manage users and roles, monitor system activity, view analytics, resolve disputes)  
+- General Visitor (not logged in) → Routed to "Landing Page" and "Public Listings Page"  
+  (Can browse verified land listings, but no registration or buying until sign-up)
+
+**Flow Summary:**  
+1. User signs up (email + password).  
+2. After login, system detects user role and routes them to their specific dashboard.  
+3. User connects wallet to enable blockchain actions like land registration or transfer.  
+4. Land Owner submits land for registration.  
+5. Government Official reviews and approves/rejects registrations and ownership transfers.  
+6. Upon approval, NFTs are minted or transferred.  
+7. Buyers purchase land; payment is held in escrow until government approval finalizes transfer.
+
+**Key Features:**  
+- Traditional authentication + optional wallet connection after login.  
+- Land registration and ownership transfer require government approval before completion.  
+- Role-based routing to different dashboards depending on user type.  
+- Escrow smart contracts protect buyer payments during ownership transfers.  
+- Blockchain records all verification decisions for full transparency.  
+- Clear status indicators for land (Pending Approval, Verified, Rejected).
+
+---
+
+**Quick Role-to-Routing Map:**  
+- `/dashboard/landowner` → Land Owners  
+- `/dashboard/buyer` → Buyers  
+- `/dashboard/verifier` → Government Officials (Registrars)  
+- `/dashboard/admin` → Admins  
+- `/landing` → General Visitors
+
+---
+
+Would you also like me to suggest how you could structure this routing easily in your MERN app (React + Express routes)?  
+It would be simple to plug in based on this structure. 🚀
