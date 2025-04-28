@@ -93,20 +93,20 @@ export default function LandRegistration() {
 
   // Handle form submission
   const onSubmit = async (values: LandRegistrationFormValues) => {
-    // Validate current step fields before proceeding
-    if (step === 1) {
-      const isValid = await form.trigger(['title', 'propertyType', 'description', 'area', 'yearBuilt']);
-      if (isValid) {
-        setStep(2);
+    try {
+      if (step === 1) {
+        if (await form.trigger(['title', 'propertyType', 'description', 'area', 'yearBuilt'])) {
+          setStep(2);
+        }
+        return;
+      } 
+      
+      if (step === 2) {
+        if (await form.trigger(['address', 'city', 'state', 'postalCode'])) {
+          setStep(3);
+        }
+        return;
       }
-      return;
-    } else if (step === 2) {
-      const isValid = await form.trigger(['address', 'city', 'state', 'postalCode']);
-      if (isValid) {
-        setStep(3);
-      }
-      return;
-    }
     
     if (uploadedDocs.length === 0) {
       toast({
