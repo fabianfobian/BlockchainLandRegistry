@@ -84,11 +84,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }
 
+  // User management routes
+  app.get("/api/users", isAuthenticated, hasRole([UserRole.ADMIN]), async (req, res) => {
+    try {
+      // In a real application, you would implement pagination
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/users/verifiers", isAuthenticated, hasRole([UserRole.ADMIN]), async (req, res) => {
+    try {
+      const verifiers = await storage.getUsersByRole(UserRole.VERIFIER);
+      res.json(verifiers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch verifiers" });
+    }
+  });
+
+  app.post("/api/users/verifier", isAuthenticated, hasRole([UserRole.ADMIN]), async (req, res) => {
+    try {
+      const { username, email, password, fullName } = req.body;
+      
+      // Basic validation
+      if (!username || !email || !password || !fullName) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+      
+      // Check if username or email already exists
+      const existingUser = await storage.getUserByUsername(username) || await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username or email already in use" });
+      }
+      
+      const hashedPassword = await hashPassword(password);
+      
+      const newVerifier = await storage.createUser({
+        username,
+        email,
+        password: hashedPassword,
+        fullName,
+        role: UserRole.VERIFIER,
+        walletAddress: null
+      });
+      
+      res.status(201).json(newVerifier);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create verifier" });
+    }
+  });
+
   // System routes
   app.get("/api/system/stats", isAuthenticated, async (req, res) => {
     try {
-      const stats = await storage.getStats();
-      res.json(stats);
+      const basicStats = await storage.getStats();
+      
+      // Enhanced stats for the admin dashboard
+      // In a real implementation, these would be calculated from actual data
+      const enhancedStats = {
+        ...basicStats,
+        usersByRole: {
+          admin: 1,
+          verifier: 1,
+          landowner: 1,
+          buyer: 1
+        },
+        landsByType: {
+          residential: 2,
+          commercial: 1,
+          agricultural: 0,
+          industrial: 0
+        },
+        landsByStatus: {
+          pending: 1,
+          verified: 2,
+          rejected: 0,
+          transfer_pending: 0
+        },
+        recentTransactions: []
+      };
+      
+      res.json(enhancedStats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch stats" });
     }

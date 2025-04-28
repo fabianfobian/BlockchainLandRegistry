@@ -14,6 +14,8 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserWallet(id: number, walletAddress: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  getUsersByRole(role: UserRole): Promise<User[]>;
   
   // Land methods
   createLand(land: InsertLand): Promise<Land>;
