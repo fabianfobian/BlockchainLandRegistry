@@ -6,9 +6,6 @@ import {
   LandStatus, UserRole
 } from "@shared/schema";
 import session from "express-session";
-import createMemoryStore from "memorystore";
-
-const MemoryStore = createMemoryStore(session);
 
 export interface IStorage {
   // User methods
@@ -312,4 +309,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Import our database storage implementation
+import { DatabaseStorage } from "./database-storage";
+
+// Use the DatabaseStorage implementation instead of MemStorage
+export const storage = new DatabaseStorage();
