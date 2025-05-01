@@ -1,6 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -80,6 +82,9 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
-    log(`Application URL: https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
+    const codespaceUrl = process.env.CODESPACE_NAME
+    ? `https://5000-${process.env.CODESPACE_NAME}.githubpreview.dev`
+    : `http://localhost:5000`;
+  log(`Application URL: ${codespaceUrl}`);
   });
 })();
