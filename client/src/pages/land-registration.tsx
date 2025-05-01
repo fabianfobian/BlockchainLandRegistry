@@ -41,6 +41,7 @@ const landRegistrationSchema = insertLandSchema.extend({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
   description: z.string().min(10, { message: "Please provide a more detailed description" }),
   area: z.coerce.number().min(1, { message: "Area must be greater than 0" }),
+  yearBuilt: z.coerce.number().int().min(1000).max(new Date().getFullYear()).optional(),
   address: z.string().min(5, { message: "Please provide a valid address" }),
   city: z.string().min(2, { message: "City is required" }),
   state: z.string().min(2, { message: "State is required" }),
@@ -96,14 +97,20 @@ export default function LandRegistration() {
     // Validate current step fields before proceeding
     if (step === 1) {
       const isValid = await form.trigger(['title', 'propertyType', 'description', 'area', 'yearBuilt']);
+      console.log('Step 1 Validation:', isValid);  // Log validation result
       if (isValid) {
         setStep(2);
+      } else {
+        console.log('Validation errors:', form.formState.errors); // Log any validation errors
       }
       return;
     } else if (step === 2) {
       const isValid = await form.trigger(['address', 'city', 'state', 'postalCode']);
+      console.log('Step 2 Validation:', isValid);  // Log validation result
       if (isValid) {
         setStep(3);
+      } else {
+        console.log('Validation errors:', form.formState.errors); // Log any validation errors
       }
       return;
     }
@@ -291,7 +298,23 @@ export default function LandRegistration() {
                         <FormItem className="col-span-6 sm:col-span-3">
                           <FormLabel>Year Built (if applicable)</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="Optional" {...field} />
+                            <select
+                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-accent focus:ring focus:ring-accent/20 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
+                              value={field.value ?? ''}
+                              onChange={e=> {
+                                const val = e.target.value;
+                                field.onChange(val? Number(val) : undefined)}}
+                            >
+                              <option value="">Select year (optional)</option>
+                              {Array.from({ length: 100 }, (_, i) => {
+                                const year = new Date().getFullYear() - i;
+                                return (
+                                  <option key={year} value={year}>
+                                    {year}
+                                  </option>
+                                );
+                              })}
+                            </select>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
