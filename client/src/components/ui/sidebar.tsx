@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   PieChart,
   Settings,
-  LogOut
+  LogOut,
+  BarChart3
 } from "lucide-react";
 import { Separator } from "./separator";
 import { useAuth } from "@/hooks/use-auth";
@@ -130,19 +131,19 @@ const navItems: NavItem[] = [
   {
     title: "User Management",
     icon: <Users className="w-5 h-5" />,
-    href: "/dashboard/admin/users",
+    href: "/dashboard/admin/user-management",
     roles: [UserRole.ADMIN]
   },
   {
     title: "Verifier Management",
     icon: <ShieldCheck className="w-5 h-5" />,
-    href: "/dashboard/admin/verifiers",
+    href: "/dashboard/admin/verifier-management",
     roles: [UserRole.ADMIN]
   },
   {
     title: "System Analytics",
-    icon: <PieChart className="w-5 h-5" />,
-    href: "/dashboard/admin/analytics",
+    icon: <BarChart3 className="w-5 h-5" />,
+    href: "/dashboard/admin/system-analytics",
     roles: [UserRole.ADMIN]
   },
   {

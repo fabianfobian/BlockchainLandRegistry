@@ -300,13 +300,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You do not own this land" });
       }
 
-      // Can only list verified lands for sale
-      if (isForSale && land.status !== LandStatus.VERIFIED) {
-        return res.status(400).json({ message: "Can only list verified lands for sale" });
-      }
+      try {
+        if (isForSale && land.status !== LandStatus.VERIFIED) {
+          return res.status(400).json({ message: "Can only list verified lands for sale" });
+        }
 
-      const updatedLand = await storage.updateLandForSale(landId, isForSale, price);
-      res.json(updatedLand);
+        const updatedLand = await storage.updateLandForSale(landId, isForSale, price);
+        if (!updatedLand) {
+          console.error(`Failed to update land for sale: Land ID ${landId}`);
+          return res.status(500).json({ message: "Failed to update land sale status" });
+        }
+
+        res.json(updatedLand);
+      } catch (error) {
+        console.error("Error in PATCH /api/lands/:id/sale:", error);
+        res.status(500).json({ message: "Failed to update land sale status" });
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to update land sale status" });
     }

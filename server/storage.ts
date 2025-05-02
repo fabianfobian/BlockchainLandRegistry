@@ -191,16 +191,25 @@ export class MemStorage implements IStorage {
 
   async updateLandForSale(id: number, isForSale: boolean, price?: number): Promise<Land | undefined> {
     const land = await this.getLand(id);
-    if (!land) return undefined;
-    
+    if (!land) {
+      console.error(`Land not found for ID: ${id}`);
+      return undefined;
+    }
+  
     const updatedLand = { 
       ...land, 
       isForSale,
-      price: price || land.price,
+      price: price !== undefined ? price : land.price,
       updatedAt: new Date() 
     };
-    this.landsStore.set(id, updatedLand);
-    return updatedLand;
+  
+    try {
+      this.landsStore.set(id, updatedLand);
+      return updatedLand;
+    } catch (error) {
+      console.error(`Failed to update land for sale: ${error}`);
+      return undefined;
+    }
   }
 
   // Transaction methods

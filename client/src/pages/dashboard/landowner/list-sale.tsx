@@ -98,9 +98,20 @@ export default function ListForSale() {
       return;
     }
     
+    console.log("Submitting property for sale:", { landId: selectedLandId, price });
+
     listForSaleMutation.mutate({ 
       landId: parseInt(selectedLandId), 
       price: Number(price) 
+    }, {
+      onError: (error) => {
+        console.error("Error listing property for sale:", error);
+        toast({
+          title: "Error",
+          description: "Failed to list the property for sale. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
   

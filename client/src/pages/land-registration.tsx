@@ -59,7 +59,6 @@ export default function LandRegistration() {
   const { user } = useAuth();
   const [_, navigate] = useLocation();
 
-  // Set up form with our validation schema
   const form = useForm<LandRegistrationFormValues>({
     resolver: zodResolver(landRegistrationSchema),
     defaultValues: {
@@ -76,7 +75,32 @@ export default function LandRegistration() {
     },
   });
 
-  // Handle document upload simulation
+  const handleNext = async () => {
+    if (step === 1) {
+      const isValid = await form.trigger(['title', 'propertyType', 'description', 'area', 'yearBuilt'], { shouldFocus: true });
+      if (isValid) {
+        setStep(2);
+      } else {
+        toast({
+          title: "Validation Error",
+          description: "Please fill out all required fields in this section.",
+          variant: "destructive",
+        });
+      }
+    } else if (step === 2) {
+      const isValid = await form.trigger(['address', 'city', 'state', 'postalCode'], { shouldFocus: true });
+      if (isValid) {
+        setStep(3);
+      } else {
+        toast({
+          title: "Validation Error",
+          description: "Please fill out all required fields in this section.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       // In a real application, we would upload to IPFS here
@@ -92,68 +116,38 @@ export default function LandRegistration() {
     }
   };
 
-  // Handle form submission
   const onSubmit = async (values: LandRegistrationFormValues) => {
-    // Validate current step fields before proceeding
-    if (step === 1) {
-      const isValid = await form.trigger(['title', 'propertyType', 'description', 'area', 'yearBuilt']);
-      console.log('Step 1 Validation:', isValid);  // Log validation result
-      if (isValid) {
-        setStep(2);
-      } else {
-        console.log('Validation errors:', form.formState.errors); // Log any validation errors
-      }
-      return;
-    } else if (step === 2) {
-      const isValid = await form.trigger(['address', 'city', 'state', 'postalCode']);
-      console.log('Step 2 Validation:', isValid);  // Log validation result
-      if (isValid) {
-        setStep(3);
-      } else {
-        console.log('Validation errors:', form.formState.errors); // Log any validation errors
-      }
-      return;
-    }
-    
     if (uploadedDocs.length === 0) {
       toast({
         title: "Documents Required",
-        description: "Please upload at least one document to verify your ownership",
+        description: "Please upload at least one document to verify your ownership.",
         variant: "destructive",
       });
       return;
     }
-    
+
     setSubmitting(true);
-    
+
     try {
-      // Ensure ownerId is set
-      values.ownerId = user?.id || 0;
-      
-      // Add documents info (in real app, these would be IPFS hashes)
       const dataToSubmit = {
         ...values,
         documents: uploadedDocs,
-        location: { lat: 40.7128, lng: -74.0060 }, // Example coordinates - would be set by map in real app
+        location: { lat: 40.7128, lng: -74.0060 },
       };
-      
+
       await apiRequest("POST", "/api/lands", dataToSubmit);
-      
+
       toast({
         title: "Registration Submitted",
         description: "Your land registration has been submitted for government verification.",
       });
-      
-      // Invalidate relevant queries
+
       queryClient.invalidateQueries({ queryKey: ['/api/lands/my'] });
-      
-      // Show success screen
       setRegistrationComplete(true);
-      
     } catch (error) {
       toast({
         title: "Registration Failed",
-        description: error instanceof Error ? error.message : "Failed to register land",
+        description: error instanceof Error ? error.message : "Failed to register land.",
         variant: "destructive",
       });
     } finally {
@@ -204,14 +198,9 @@ export default function LandRegistration() {
                   Step {step} of 3: {step === 1 ? "Property Details" : step === 2 ? "Location Information" : "Document Upload"}
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <div className={`w-3 h-3 rounded-full ${step >= 1 ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
-                <div className={`w-3 h-3 rounded-full ${step >= 2 ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
-                <div className={`w-3 h-3 rounded-full ${step >= 3 ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
-              </div>
             </div>
           </CardHeader>
-          
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent className="px-4 py-5 sm:p-6">
@@ -322,7 +311,7 @@ export default function LandRegistration() {
                     />
                   </div>
                 )}
-                
+
                 {step === 2 && (
                   <div className="grid grid-cols-6 gap-6">
                     <FormField
@@ -396,7 +385,7 @@ export default function LandRegistration() {
                     </div>
                   </div>
                 )}
-                
+
                 {step === 3 && (
                   <div className="space-y-6">
                     <div>
@@ -463,42 +452,35 @@ export default function LandRegistration() {
                   </div>
                 )}
               </CardContent>
-              
+
               <CardFooter className="px-4 py-3 bg-gray-50 dark:bg-gray-800 text-right sm:px-6 flex justify-between">
                 {step > 1 && (
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setStep((step - 1) as 1 | 2)}
+                    onClick={() => setStep(step - 1)}
                     disabled={submitting}
                   >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
                     Previous
                   </Button>
                 )}
                 <div className="ml-auto">
-                  <Button
-                    type="submit"
-                    disabled={submitting}
-                  >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {step === 3 ? "Submitting..." : "Saving..."}
-                      </>
-                    ) : (
-                      <>
-                        {step < 3 ? (
-                          "Next"
-                        ) : (
-                          <>
-                            <Save className="w-4 h-4 mr-2" />
-                            Submit Registration
-                          </>
-                        )}
-                      </>
-                    )}
-                  </Button>
+                  {step < 3 ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={submitting}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={submitting}
+                    >
+                      Submit Registration
+                    </Button>
+                  )}
                 </div>
               </CardFooter>
             </form>
