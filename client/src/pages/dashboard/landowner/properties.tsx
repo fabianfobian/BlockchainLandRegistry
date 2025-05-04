@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { UserRole, LandStatus } from "@shared/schema";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import PropertyCard from "@/components/property-card";
@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export default function LandownerProperties() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const {
     data: lands,
@@ -86,13 +87,49 @@ export default function LandownerProperties() {
                   key={land.id} 
                   property={land}
                   actionButton={
-                    land.status === LandStatus.VERIFIED && !land.isForSale ? (
-                      <Link href={`/dashboard/landowner/list-sale?id=${land.id}`}>
-                        <Button size="sm" className="bg-accent hover:bg-accent/90 text-white">
-                          <BadgeDollarSign className="w-4 h-4 mr-1" />
+                    land.status === LandStatus.VERIFIED ? (
+                      land.isForSale ? (
+                        <button 
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                          onClick={async () => {
+                            try {
+                              await fetch(`/api/lands/${land.id}/sale`, {
+                                method: "PATCH",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({ isForSale: false }),
+                              });
+                              queryClient.setQueryData(['/api/lands/my'], (oldData) => {
+                                return oldData.map((item) =>
+                                  item.id === land.id ? { ...item, isForSale: false } : item
+                                );
+                              });
+                              toast({
+                                title: "Property removed from sale",
+                                description: "The property is no longer listed for sale.",
+                              });
+                            } catch (error) {
+                              toast({
+                                title: "Failed to update property",
+                                description: error instanceof Error ? error.message : "An error occurred.",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                        >
+                          Remove from Sale
+                        </button>
+                      ) : (
+                        <button 
+                          className="bg-accent hover:bg-accent/90 text-white px-4 py-2 rounded"
+                          onClick={() => {
+                            window.location.href = `/dashboard/landowner/list-sale?id=${land.id}`;
+                          }}
+                        >
                           List for Sale
-                        </Button>
-                      </Link>
+                        </button>
+                      )
                     ) : undefined
                   }
                 />
