@@ -4,6 +4,7 @@ import { setupAuth, hashPassword } from "./auth";
 import { storage } from "./storage";
 import { insertLandSchema, insertTransactionSchema, insertVerificationLogSchema, LandStatus, UserRole } from "@shared/schema";
 import { z } from "zod";
+import { Request, Response, NextFunction } from 'express';
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: Function) => {
@@ -28,10 +29,27 @@ const hasRole = (roles: UserRole[]) => {
   };
 };
 
+// Helper function to safely access req.user
+function getUserId(req: Request): number {
+  if (!req.user || !req.user.id) {
+    throw new Error("Unauthorized: User is not authenticated.");
+  }
+  return req.user.id;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
   
+  // Middleware to ensure req.user is defined
+  app.use((req, res, next) => {
+    if (!req.user) {
+      console.error("User is not authenticated.");
+      return res.status(401).json({ message: "Unauthorized: User is not authenticated." });
+    }
+    next();
+  });
+
   // DEVELOPMENT ONLY: Seed endpoint to create test accounts
   if (process.env.NODE_ENV === 'development') {
     app.post("/api/seed/users", async (req, res) => {
@@ -192,19 +210,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all lands owned by the current user
-  app.get("/api/lands/my", isAuthenticated, async (req, res) => {
+  app.get("/api/lands/my", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      console.log("Fetching lands for user:", req.user?.id);
-      if (!req.user || !req.user.id) {
-        return res.status(400).json({ message: "User ID is required" });
-      }
-      
-      const lands = await storage.getLandsByOwner(req.user.id);
-      console.log("User lands found:", lands?.length || 0);
+      const userId = getUserId(req);
+      console.log("Fetching lands for user ID:", userId);
+      const lands = await storage.getLandsByOwner(userId);
+      console.log("Lands retrieved for user ID", userId, ":", lands);
       res.json(lands || []);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching user lands:", error);
-      res.status(500).json({ message: "Failed to fetch lands" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch lands";
+      res.status(500).json({ message: errorMessage });
     }
   });
 
